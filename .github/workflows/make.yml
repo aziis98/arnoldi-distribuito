@@ -26,10 +26,10 @@ jobs:
 
     - name: Build
       run: |
-        pwd
-        ls deps/petsc
         git submodule init
         git submodule update
+        pwd
+        ls deps/petsc
         make
 
     - name: Archive Artifact
