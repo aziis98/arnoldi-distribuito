@@ -28,8 +28,8 @@ jobs:
       run: |
         git submodule init
         git submodule update
-        pwd
-        ls deps/petsc
+        cd deps/petsc && ./configure
+        cd deps/petsc && make
         make
 
     - name: Archive Artifact
