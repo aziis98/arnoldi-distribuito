@@ -27,7 +27,7 @@ setup:
 	mkdir -p bin
 	mkdir -p deps
 
-deps: deps/petsc deps/psblas
+deps: deps/petsc
 
 deps/%:
 	cd $@ && ./configure
