@@ -1,0 +1,4 @@
+[submodule "deps/petsc"]
+	path = deps/petsc
+	url = https://gitlab.com/petsc/petsc.git
+	branch = release
