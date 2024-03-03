@@ -21,11 +21,13 @@ CUDAC_FLAGS := $(shell pkg-config --variable=cudaflags_extra $(PACKAGES))
 CUDA_LIB := $(shell pkg-config --variable=cudalib $(PACKAGES))
 CUDA_INCLUDE := $(shell pkg-config --variable=cudainclude $(PACKAGES))
 
-all: setup main
+all: setup ./bin/main
 
 setup:
 	mkdir -p bin
 	mkdir -p deps
+	cd deps/petsc && ./configure
+	cd deps/petsc && make
 
 print:
 	@echo ====== PETSc ======
