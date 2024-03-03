@@ -21,13 +21,17 @@ CUDAC_FLAGS := $(shell pkg-config --variable=cudaflags_extra $(PACKAGES))
 CUDA_LIB := $(shell pkg-config --variable=cudalib $(PACKAGES))
 CUDA_INCLUDE := $(shell pkg-config --variable=cudainclude $(PACKAGES))
 
-all: setup ./bin/main
+all: setup deps ./bin/main
 
 setup:
 	mkdir -p bin
 	mkdir -p deps
-	cd deps/petsc && ./configure
-	cd deps/petsc && make
+
+deps: deps/petsc deps/psblas
+
+deps/%:
+	cd $@ && ./configure
+	cd $@ && make	
 
 print:
 	@echo ====== PETSc ======
@@ -52,8 +56,10 @@ print:
 	@echo CUDA_LIB=$(CUDA_LIB)
 	@echo CUDA_INCLUDE=$(CUDA_INCLUDE)
 
-bin/% : %.c
+bin/%: %.c
 	$(LINK.cc) -o $@ $^ $(LDLIBS)
+bin/%.o: %.f90
+	$(FC) $(OUTPUT_OPTION) $<
 bin/%.o: %.cxx
 	$(COMPILE.cc) $(OUTPUT_OPTION) $<
 bin/%.o: %.c
