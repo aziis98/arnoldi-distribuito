@@ -15,7 +15,14 @@ jobs:
 
     - name: Install PETSc, MPI, and OpenMPI
       run: |
-        sudo apt-get install -y petsc mpi openmpi-bin libopenmpi-dev
+        sudo apt-get install -y \
+          petsc-dev \
+          libpetsc-real-dev \
+          mpi-default-bin \
+          mpi-default-dev \
+          openmpi-bin \
+          openmpi-common \
+          libopenmpi-dev
 
     - name: Build Project
       run: |
