@@ -1,0 +1,28 @@
+name: Build and Generate Artifact
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Install PETSc, MPI, and OpenMPI
+      run: |
+        sudo apt-get install -y petsc mpi openmpi-bin libopenmpi-dev
+
+    - name: Build Project
+      run: |
+        make
+
+    - name: Archive Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: main-binary
+        path: bin/main
