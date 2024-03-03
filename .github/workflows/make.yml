@@ -24,6 +24,10 @@ jobs:
           openmpi-common \
           libopenmpi-dev
 
+    - name: Clone Submodules
+      run: |
+        git submodule update --init
+
     - name: Build Project
       run: |
         make
