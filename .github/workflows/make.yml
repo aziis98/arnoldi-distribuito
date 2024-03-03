@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Install PETSc, MPI, and OpenMPI
       run: |
@@ -32,7 +32,7 @@ jobs:
         make
 
     - name: Archive Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: main-binary
+        name: main
         path: bin/main
