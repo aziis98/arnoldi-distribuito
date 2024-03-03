@@ -31,7 +31,7 @@ deps: deps/petsc
 
 deps/%:
 	cd $@ && ./configure
-	cd $@ && make	
+	cd $@ && make
 
 print:
 	@echo ====== PETSc ======
