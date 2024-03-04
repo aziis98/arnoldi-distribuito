@@ -13,16 +13,11 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install PETSc, MPI, and OpenMPI
-      run: |
-        sudo apt-get install -y \
-          petsc-dev \
-          libpetsc-real-dev \
-          mpi-default-bin \
-          mpi-default-dev \
-          openmpi-bin \
-          openmpi-common \
-          libopenmpi-dev
+    - name: Install PETSc, MPI and OpenMPI
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: petsc-dev libpetsc-real-dev mpi-default-bin mpi-default-dev openmpi-bin openmpi-common libopenmpi-dev
+        version: 1.0
 
     - name: Build
       run: |
