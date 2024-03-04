@@ -2,6 +2,3 @@
 	path = deps/petsc
 	url = https://gitlab.com/petsc/petsc.git
 	branch = release
-[submodule "deps/psblas"]
-	path = deps/psblas
-	url = https://github.com/sfilippone/psblas3.git
