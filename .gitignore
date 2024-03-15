@@ -1,0 +1,6 @@
+# Local files
+.env
+*.local*
+
+# Binaries
+build/
