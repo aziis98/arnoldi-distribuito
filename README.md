@@ -6,7 +6,7 @@ $ mkdir build
 $ cd build
 
 # Build, Compile, Run
-$ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+$ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
 $ make
 $ mpirun ./main
 
