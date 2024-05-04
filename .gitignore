@@ -4,3 +4,6 @@
 
 # Binaries
 build/
+
+# Clang
+.cache/
