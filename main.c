@@ -138,6 +138,7 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, Vec *Q, Mat H) {
         VecDuplicate(b, &v);
         MatMult(A, Q[k - 1], v);
 
+        // Reorthogonalization using modified Gram-Schmidt
         for (PetscInt j = 0; j < k; j++) {
             PetscScalar h;
             VecDot(Q[j], v, &h);
@@ -145,10 +146,12 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, Vec *Q, Mat H) {
             VecAXPY(v, -h, Q[j]);
         }
 
+        // Normalize
         PetscScalar h;
         VecNorm(v, NORM_2, &h);
         MatSetValue(H, k, k - 1, h, INSERT_VALUES);
 
+        // Check for convergence
         if (h > eps) {
             VecNormalize(v, NULL);
             Q[k] = v;
