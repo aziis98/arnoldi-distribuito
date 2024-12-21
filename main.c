@@ -41,6 +41,8 @@ int example_lapack() {
     } else {
         printf("Matrix is singular. Solution could not be computed.\n");
     }
+
+    return info;
 }
 
 int main(int argc, char **argv) {
