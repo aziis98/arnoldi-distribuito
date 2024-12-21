@@ -1,6 +1,16 @@
 # Arnoldi Iteration
 
-## Usage
+## Setup
+
+### Spack
+
+```bash shell
+$ spack env activate ./spack-env
+$ spack install
+$ spack load openblas openmpi petsc
+```
+
+### CMake
 
 To build main from main.c
 
