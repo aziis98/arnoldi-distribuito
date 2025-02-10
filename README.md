@@ -12,12 +12,14 @@ $ git clone -c feature.manyFiles=true --depth=2 https://github.com/spack/spack.g
 
 # For bash/zsh/sh
 $ . spack/share/spack/setup-env.sh
-
 # For tcsh/csh
 $ source spack/share/spack/setup-env.csh
-
 # For fish
 $ . spack/share/spack/setup-env.fish
+
+# Then to discover available compilers
+$ spack compiler list
+$ spack compiler find
 ```
 
 Now in the root directory of this repository, you can load the spack environment
