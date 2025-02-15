@@ -4,6 +4,9 @@
 
 ### Spack
 
+> I recently wrote
+> [an article about this](https://aziis98.com/articles/using-spack/)
+
 This assumes that you have spack installed and sourced. If not, you can install
 it using the following commands
 
