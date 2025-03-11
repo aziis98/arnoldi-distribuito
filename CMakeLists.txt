@@ -24,3 +24,7 @@ target_link_libraries(main PUBLIC m PkgConfig::PETSc PkgConfig::OpenBLAS PkgConf
 add_executable(arnoldi arnoldi.c)
 target_include_directories(arnoldi PUBLIC ${PETSc_INCLUDE_DIRS} ${OpenBLAS_INCLUDE_DIRS} ${OpenMPI_INCLUDE_DIRS})
 target_link_libraries(arnoldi PUBLIC m PkgConfig::PETSc PkgConfig::OpenBLAS PkgConfig::OpenMPI)
+
+add_executable(ex10 ex10.c)
+target_include_directories(ex10 PUBLIC ${PETSc_INCLUDE_DIRS} ${OpenBLAS_INCLUDE_DIRS} ${OpenMPI_INCLUDE_DIRS})
+target_link_libraries(ex10 PUBLIC m PkgConfig::PETSc PkgConfig::OpenBLAS PkgConfig::OpenMPI)

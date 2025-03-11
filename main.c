@@ -107,6 +107,7 @@ int main(int argc, char **argv) {
 
     PetscCall(
         PetscPrintf(PETSC_COMM_WORLD, "Vector length %" PetscInt_FMT "\n", n));
+
     PetscCall(VecMax(x, &maxind, &maxval));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                           "VecMax %g, VecInd %" PetscInt_FMT "\n",
