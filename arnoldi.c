@@ -2,8 +2,10 @@
 
 #include <lapacke.h>
 #include <mpi.h>
+#include <petscconf.h>
 #include <petscerror.h>
 #include <petscmat.h>
+#include <petscoptions.h>
 #include <petscsys.h>
 #include <petscsystypes.h>
 #include <petscvec.h>
@@ -38,8 +40,8 @@ void swap(double *a, double *b) {
 PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, double *h);
 
 int main(int argc, char **argv) {
-    Vec b;
     PetscInt n, l;
+    char matrix_name[PETSC_MAX_PATH_LEN];
 
     PetscFunctionBeginUser;
     PetscInitialize(&argc, &argv, (char *)0, help);
@@ -53,6 +55,10 @@ int main(int argc, char **argv) {
     if (!flg)
         l = 10;
 
+    PetscOptionsGetString(NULL, NULL, "-matrix_path", matrix_name, sizeof(matrix_name), &flg);
+    if (!flg)
+        snprintf(matrix_name, sizeof(matrix_name), "./matrices/laplacian/laplacian-discretization-3d.mat");
+
     Mat A;
     MatCreate(PETSC_COMM_WORLD, &A);
     PetscViewer v;
@@ -61,7 +67,7 @@ int main(int argc, char **argv) {
     PetscCall(PetscViewerPushFormat(v, PETSC_VIEWER_HDF5_MAT));
     PetscCall(PetscViewerSetFromOptions(v));
     PetscCall(PetscViewerFileSetMode(v, FILE_MODE_READ));
-    PetscCall(PetscViewerFileSetName(v, "../matrices/laplacian/laplacian-discretization-3d.mat"));
+    PetscCall(PetscViewerFileSetName(v, "./matrices/laplacian/laplacian-discretization-3d.mat"));
 
     PetscCall(MatSetOptionsPrefix(A, "a_"));
     PetscCall(PetscObjectSetName((PetscObject)A, "A"));
@@ -77,6 +83,7 @@ int main(int argc, char **argv) {
         MatGetSize(A, &n, NULL);
     }
 
+    Vec b;
     VecCreate(PETSC_COMM_WORLD, &b);
     VecSetSizes(b, PETSC_DECIDE, n);
     VecSetType(b, VECMPI);
