@@ -10,9 +10,11 @@
         "LAPACKE",
         "MATDENSE",
         "MATMPIAIJ",
+        "matwrite",
         "PETSC",
         "PETSCVIEWERHDF",
         "Reorthogonalization",
+        "spdiagm",
         "VECMPI"
     ]
 }

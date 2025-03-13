@@ -194,9 +194,10 @@ int main(int argc, char **argv) {
 PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, double *h) {
     PetscFunctionBeginUser;
 
-    int rank;
+    int rank, total;
     MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
-    printf("Rank %d\n", rank);
+    MPI_Comm_size(PETSC_COMM_WORLD, &total);
+    printf("Process %d of %d\n", rank, total);
 
     PetscScalar eps = 1e-12;
 

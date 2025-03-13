@@ -2,8 +2,8 @@ using SparseArrays
 using MAT
 
 # 11 x 16
-nx = 10
-ny = 15
+nx = 11 - 1
+ny = 16 - 1
 ex = fill(1, nx)
 ey = fill(1, ny)
 Dxx = spdiagm(-1 => ex, 0 => -2 * ex, +1 => ex)
