@@ -27,17 +27,6 @@ void swap(double *a, double *b) {
     *b = t;
 }
 
-// int compare_double(const void *a, const void *b) {
-//     int aa = *(int *)a;
-//     int bb = *(int *)b;
-
-//     if (aa < bb)
-//         return -1;
-//     if (aa > bb)
-//         return 1;
-//     return 0;
-// }
-
 PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, double *h);
 
 int main(int argc, char **argv) {
