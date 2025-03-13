@@ -198,9 +198,9 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
     MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
     MPI_Comm_size(PETSC_COMM_WORLD, &total);
 
-    char *hostname;
+    char hostname[64];
     PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
-    printf("Process %d of %d\n", rank, total);
+    printf("Process %s: %d of %d\n", hostname, rank, total);
 
     PetscScalar eps = 1e-12;
 
