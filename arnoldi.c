@@ -66,7 +66,8 @@ int main(int argc, char **argv) {
 
     char hostname[64];
     PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Running on %s, rank %d of %d\n", hostname, rank, total));
+    if (rank == 0)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Running on %s, rank %d of %d\n", hostname, rank, total));
 
     PetscLogDouble load_start_time;
     PetscCall(PetscTime(&load_start_time));
@@ -93,7 +94,8 @@ int main(int argc, char **argv) {
     PetscCall(PetscTime(&load_start_end));
 
     PetscLogDouble load_time = load_start_end - load_start_time;
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Load time: %f seconds\n", load_time));
+    if (rank == 0)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Load time: %f seconds\n", load_time));
 
     if (n == -1) {
         MatGetSize(A, &n, NULL);
@@ -164,7 +166,8 @@ int main(int argc, char **argv) {
         PetscLogDouble arnoldi_end_time;
         PetscCall(PetscTime(&arnoldi_end_time));
         PetscLogDouble arnoldi_time = arnoldi_end_time - arnoldi_start_time;
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Arnoldi time: %f seconds\n", arnoldi_time));
+        if (rank == 0)
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Arnoldi time: %f seconds\n", arnoldi_time));
         // ARNOLDI TIME END
 
         // // print Hessenberg matrix
