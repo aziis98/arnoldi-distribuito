@@ -5,7 +5,7 @@
 
 for i in {1..20}
 do
-    echo "Iteration $i"
+    echo "Node Count: $i"
     mpirun -np $i ./build/arnoldi -l 400
     sleep 1
 done
