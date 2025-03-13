@@ -159,33 +159,33 @@ int main(int argc, char **argv) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Arnoldi time: %f seconds\n", arnoldi_time));
         // ARNOLDI TIME END
 
-        // print Hessenberg matrix
-        printf("H = \n");
-        for (int i = 0; i < l + 1; i++) {
-            for (int j = 0; j < l; j++) {
-                printf("%.3f ", H[i * l + j]);
-            }
-            printf("\n");
-        }
+        // // print Hessenberg matrix
+        // printf("H = \n");
+        // for (int i = 0; i < l + 1; i++) {
+        //     for (int j = 0; j < l; j++) {
+        //         printf("%.3f ", H[i * l + j]);
+        //     }
+        //     printf("\n");
+        // }
 
-        // sort eigenvalues
-        for (int i = 0; i < l; i++) {
-            for (int j = i + 1; j < l; j++) {
-                if (wr[i] > wr[j]) {
-                    swap(&wr[i], &wr[j]);
-                    swap(&wi[i], &wi[j]);
-                    for (int k = 0; k < l; k++) {
-                        swap(&z[i * l + k], &z[j * l + k]);
-                    }
-                }
-            }
-        }
+        // // sort eigenvalues
+        // for (int i = 0; i < l; i++) {
+        //     for (int j = i + 1; j < l; j++) {
+        //         if (wr[i] > wr[j]) {
+        //             swap(&wr[i], &wr[j]);
+        //             swap(&wi[i], &wi[j]);
+        //             for (int k = 0; k < l; k++) {
+        //                 swap(&z[i * l + k], &z[j * l + k]);
+        //             }
+        //         }
+        //     }
+        // }
 
-        // print eigenvalues
-        printf("Eigenvalues = \n");
-        for (int i = 0; i < l; i++) {
-            printf("%.3f + %.3f i\n", wr[i], wi[i]);
-        }
+        // // print eigenvalues
+        // printf("Eigenvalues = \n");
+        // for (int i = 0; i < l; i++) {
+        //     printf("%.3f + %.3f i\n", wr[i], wi[i]);
+        // }
     }
 
     // print eigenvectors
