@@ -6,7 +6,7 @@
 for i in {1..20}
 do
     echo "Node Count: $i"
-    mpirun -np $i ./build/arnoldi -l 400
+    srun --nodes=$i ./build/arnoldi -l 25
     sleep 1
 done
 

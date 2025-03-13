@@ -17,6 +17,7 @@
         "Reorthogonalization",
         "SBATCH",
         "spdiagm",
+        "srun",
         "VECMPI"
     ]
 }
