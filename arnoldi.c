@@ -8,6 +8,7 @@
 #include <petscoptions.h>
 #include <petscsys.h>
 #include <petscsystypes.h>
+#include <petsctime.h>
 #include <petscvec.h>
 #include <petscviewer.h>
 #include <petscviewerhdf5.h>
@@ -59,6 +60,9 @@ int main(int argc, char **argv) {
     if (!flg)
         snprintf(matrix_name, sizeof(matrix_name), "./matrices/laplacian/laplacian-discretization-3d.mat");
 
+    PetscLogDouble load_start_time;
+    PetscCall(PetscTime(&load_start_time));
+
     Mat A;
     MatCreate(PETSC_COMM_WORLD, &A);
     PetscViewer v;
@@ -77,7 +81,11 @@ int main(int argc, char **argv) {
     MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);
     MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);
 
-    // TIME: Assembly construction
+    PetscLogDouble load_start_end;
+    PetscCall(PetscTime(&load_start_end));
+
+    PetscLogDouble load_time = load_start_end - load_start_time;
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Load time: %f seconds\n", load_time));
 
     if (n == -1) {
         MatGetSize(A, &n, NULL);
@@ -94,7 +102,7 @@ int main(int argc, char **argv) {
     // MatView(A, PETSC_VIEWER_STDOUT_WORLD);
     // VecView(b, PETSC_VIEWER_STDOUT_WORLD);
 
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Allocating memory for Krylov subspace basis\n"));
+    // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Allocating memory for Krylov subspace basis\n"));
 
     Vec *Q;
     PetscMalloc1(l, &Q);
@@ -103,7 +111,7 @@ int main(int argc, char **argv) {
         VecCreateMPI(PETSC_COMM_WORLD, PETSC_DECIDE, n, &Q[i]);
     }
 
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Constructing Hessenberg matrix\n"));
+    // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Constructing Hessenberg matrix\n"));
 
     // Mat H;
     // PetscCall(MatCreate(PETSC_COMM_SELF, &H));
@@ -117,9 +125,11 @@ int main(int argc, char **argv) {
 
     double *H = (double *)malloc((l + 1) * l * sizeof(double));
 
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Starting iteration\n"));
+    // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Starting iteration\n"));
 
-    // TIME:START
+    // ARNOLDI TIME START
+    PetscLogDouble arnoldi_start_time;
+    PetscCall(PetscTime(&arnoldi_start_time));
 
     PetscCall(ArnoldiIteration(A, b, l, n, Q, H));
 
@@ -127,12 +137,28 @@ int main(int argc, char **argv) {
     // PetscCall(MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY));
     // PetscCall(MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY));
 
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Done\n"));
+    // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Done\n"));
 
     int rank;
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
     if (rank == 0) {
+
+        double *wr = (double *)malloc(l * sizeof(double));
+        double *wi = (double *)malloc(l * sizeof(double));
+        double *z = (double *)malloc(l * l * sizeof(double));
+        double *work = (double *)malloc(3 * l * sizeof(double));
+        int info;
+
+        // call LAPACK function "DHSEQR" to compute the eigenvalues of the Hessenberg matrix
+        LAPACKE_dhseqr(LAPACK_ROW_MAJOR, 'E', 'I', l, 1, l, H, l, wr, wi, z, l);
+
+        PetscLogDouble arnoldi_end_time;
+        PetscCall(PetscTime(&arnoldi_end_time));
+        PetscLogDouble arnoldi_time = arnoldi_end_time - arnoldi_start_time;
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Arnoldi time: %f seconds\n", arnoldi_time));
+        // ARNOLDI TIME END
+
         // print Hessenberg matrix
         printf("H = \n");
         for (int i = 0; i < l + 1; i++) {
@@ -141,18 +167,6 @@ int main(int argc, char **argv) {
             }
             printf("\n");
         }
-
-        // call LAPACK function "DHSEQR" to compute the eigenvalues of the Hessenberg matrix
-
-        double *wr = (double *)malloc(l * sizeof(double));
-        double *wi = (double *)malloc(l * sizeof(double));
-        double *z = (double *)malloc(l * l * sizeof(double));
-        double *work = (double *)malloc(3 * l * sizeof(double));
-        int info;
-
-        LAPACKE_dhseqr(LAPACK_ROW_MAJOR, 'E', 'I', l, 1, l, H, l, wr, wi, z, l);
-
-        // TIME:END
 
         // sort eigenvalues
         for (int i = 0; i < l; i++) {
@@ -194,13 +208,13 @@ int main(int argc, char **argv) {
 PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, double *h) {
     PetscFunctionBeginUser;
 
-    int rank, total;
-    MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
-    MPI_Comm_size(PETSC_COMM_WORLD, &total);
+    // int rank, total;
+    // MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
+    // MPI_Comm_size(PETSC_COMM_WORLD, &total);
 
-    char hostname[64];
-    PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
-    printf("Process %s: %d of %d\n", hostname, rank, total);
+    // char hostname[64];
+    // PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
+    // printf("Process %s: %d of %d\n", hostname, rank, total);
 
     PetscScalar eps = 1e-12;
 
@@ -220,7 +234,7 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
 
     for (PetscInt k = 1; k < n + 1; k++) {
 
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Iteration %d\n", k));
+        // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Iteration %d\n", k));
 
         Vec v;
         PetscCall(VecDuplicate(b, &v));
@@ -228,7 +242,7 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
 
         // Reorthogonalization using modified Gram-Schmidt
         for (PetscInt j = 0; j < k; j++) { // anche solo 3
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Reorthogonalization %d %d\n", k, j));
+            // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Reorthogonalization %d %d\n", k, j));
 
             PetscScalar h_ij;
             PetscCall(VecDot(Q[j], v, &h_ij));
@@ -251,7 +265,7 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
             PetscCall(VecNormalize(v, NULL));
             Q[k] = v;
         } else {
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Early breakdown"));
+            // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Early breakdown"));
             break;
         }
     }

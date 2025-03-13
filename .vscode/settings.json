@@ -11,9 +11,11 @@
         "MATDENSE",
         "MATMPIAIJ",
         "matwrite",
+        "mpirun",
         "PETSC",
         "PETSCVIEWERHDF",
         "Reorthogonalization",
+        "SBATCH",
         "spdiagm",
         "VECMPI"
     ]
