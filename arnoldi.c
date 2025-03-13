@@ -147,8 +147,8 @@ int main(int argc, char **argv) {
 
     // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Done\n"));
 
-    int rank;
-    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+    // int rank;
+    // PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
     if (rank == 0) {
 
