@@ -60,6 +60,14 @@ int main(int argc, char **argv) {
     if (!flg)
         snprintf(matrix_name, sizeof(matrix_name), "./matrices/laplacian/laplacian-discretization-3d.mat");
 
+    int rank, total;
+    MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
+    MPI_Comm_size(PETSC_COMM_WORLD, &total);
+
+    char hostname[64];
+    PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Running on %s, rank %d of %d\n", hostname, rank, total));
+
     PetscLogDouble load_start_time;
     PetscCall(PetscTime(&load_start_time));
 
@@ -207,14 +215,6 @@ int main(int argc, char **argv) {
 
 PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, double *h) {
     PetscFunctionBeginUser;
-
-    // int rank, total;
-    // MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
-    // MPI_Comm_size(PETSC_COMM_WORLD, &total);
-
-    // char hostname[64];
-    // PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
-    // printf("Process %s: %d of %d\n", hostname, rank, total);
 
     PetscScalar eps = 1e-12;
 
