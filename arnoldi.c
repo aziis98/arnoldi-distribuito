@@ -27,14 +27,40 @@ void swap(double *a, double *b) {
     *b = t;
 }
 
+void print_all_hostnames() {
+    int rank, size, name_len;
+    char proc_name[MPI_MAX_PROCESSOR_NAME];
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    MPI_Get_processor_name(proc_name, &name_len);
+
+    char *all_names = NULL;
+    if (rank == 0)
+        all_names = malloc(size * MPI_MAX_PROCESSOR_NAME * sizeof(char));
+
+    MPI_Gather(proc_name, MPI_MAX_PROCESSOR_NAME, MPI_CHAR, all_names, MPI_MAX_PROCESSOR_NAME, MPI_CHAR, 0,
+               MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        for (int i = 0; i < size; i++) {
+            printf("Rank %d: %s\n", i, &all_names[i * MPI_MAX_PROCESSOR_NAME]);
+        }
+        free(all_names);
+    }
+}
+
 PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, double *h);
 
 int main(int argc, char **argv) {
-    PetscInt n, l;
-    char matrix_name[PETSC_MAX_PATH_LEN];
-
     PetscFunctionBeginUser;
     PetscInitialize(&argc, &argv, (char *)0, help);
+
+    print_all_hostnames();
+
+    PetscInt n, l;
+    char matrix_name[PETSC_MAX_PATH_LEN];
 
     PetscBool flg;
     PetscOptionsGetInt(NULL, NULL, "-n", &n, &flg);
