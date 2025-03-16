@@ -4,6 +4,7 @@
         "Arnoldi",
         "AXPY",
         "DHSEQR",
+        "eigvals",
         "Hessenberg",
         "Krylov",
         "LAPACK",

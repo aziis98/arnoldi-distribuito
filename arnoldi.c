@@ -126,11 +126,16 @@ int main(int argc, char **argv) {
 
     // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Starting iteration\n"));
 
-    // ARNOLDI TIME START
     PetscLogDouble arnoldi_start_time;
     PetscCall(PetscTime(&arnoldi_start_time));
-
-    PetscCall(ArnoldiIteration(A, b, l, n, Q, H));
+    {
+        PetscCall(ArnoldiIteration(A, b, l, n, Q, H));
+    }
+    PetscLogDouble arnoldi_end_time;
+    PetscCall(PetscTime(&arnoldi_end_time));
+    PetscLogDouble arnoldi_time = arnoldi_end_time - arnoldi_start_time;
+    if (rank == 0)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Arnoldi time: %f seconds\n", arnoldi_time));
 
     // PetscCall(MatSetValue(H, 2, 3, -1, INSERT_VALUES));
     // PetscCall(MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY));
@@ -149,15 +154,16 @@ int main(int argc, char **argv) {
         double *work = (double *)malloc(3 * l * sizeof(double));
         int info;
 
-        // call LAPACK function "DHSEQR" to compute the eigenvalues of the Hessenberg matrix
-        LAPACKE_dhseqr(LAPACK_ROW_MAJOR, 'E', 'I', l, 1, l, H, l, wr, wi, z, l);
-
-        PetscLogDouble arnoldi_end_time;
-        PetscCall(PetscTime(&arnoldi_end_time));
-        PetscLogDouble arnoldi_time = arnoldi_end_time - arnoldi_start_time;
-        if (rank == 0)
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Arnoldi time: %f seconds\n", arnoldi_time));
-        // ARNOLDI TIME END
+        PetscLogDouble lapack_start_time;
+        PetscCall(PetscTime(&lapack_start_time));
+        {
+            // call LAPACK function "DHSEQR" to compute the eigenvalues of the Hessenberg matrix
+            LAPACKE_dhseqr(LAPACK_ROW_MAJOR, 'E', 'I', l, 1, l, H, l, wr, wi, z, l);
+        }
+        PetscLogDouble lapack_end_time;
+        PetscCall(PetscTime(&lapack_end_time));
+        PetscLogDouble lapack_time = lapack_end_time - lapack_start_time;
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] LAPACK time: %f seconds\n", lapack_time));
 
         // // print Hessenberg matrix
         // printf("H = \n");
