@@ -214,6 +214,9 @@ int main(int argc, char **argv) {
 PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, double *h) {
     PetscFunctionBeginUser;
 
+    int rank;
+    MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
+
     PetscScalar eps = 1e-12;
 
     Vec q;
@@ -232,7 +235,8 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
 
     for (PetscInt k = 1; k < n + 1; k++) {
 
-        // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Iteration %d\n", k));
+        if (rank == 0)
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Iteration %d\n", k));
 
         Vec v;
         PetscCall(VecDuplicate(b, &v));
