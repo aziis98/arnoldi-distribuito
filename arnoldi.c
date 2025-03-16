@@ -95,12 +95,20 @@ int main(int argc, char **argv) {
     PetscCall(PetscViewerPushFormat(v, PETSC_VIEWER_HDF5_MAT));
     PetscCall(PetscViewerSetFromOptions(v));
     PetscCall(PetscViewerFileSetMode(v, FILE_MODE_READ));
-    PetscCall(PetscViewerFileSetName(v, "./matrices/laplacian/laplacian-discretization-3d.mat"));
+    PetscCall(PetscViewerFileSetName(v, matrix_name));
 
     PetscCall(MatSetOptionsPrefix(A, "a_"));
     PetscCall(PetscObjectSetName((PetscObject)A, "A"));
 
     PetscCall(MatLoad(A, v));
+
+    // Print matrix info
+    {
+        PetscInt m, n;
+        MatGetSize(A, &m, &n);
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Matrix loaded from %s\n", matrix_name));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Matrix size: %d x %d\n", m, n));
+    }
 
     MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);
     MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);
