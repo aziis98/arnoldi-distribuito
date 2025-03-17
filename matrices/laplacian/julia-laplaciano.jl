@@ -1,10 +1,12 @@
 using SparseArrays
 using MAT
 
-# 20 x 20 x 20 grid
-nx = 20 - 1
-ny = 20 - 1
-nz = 20 - 1
+N = parse(Int, ARGS[1])
+println("Generating 3D Laplacian for size $N")
+
+nx = N
+ny = N
+nz = N
 
 ex = fill(1, nx)
 ey = fill(1, ny)
@@ -20,4 +22,6 @@ Iz = spdiagm(0 => [ez; 1])
 
 L = kron(Dxx, Iy, Iz) + kron(Ix, Dyy, Iz) + kron(Ix, Iy, Dzz)
 
-matwrite("laplacian-discretization-3d.mat", Dict("A" => L))
+display(sparse(L))
+
+matwrite("laplacian_$N.mat", Dict("A" => L))
