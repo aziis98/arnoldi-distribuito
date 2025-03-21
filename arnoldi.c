@@ -256,7 +256,7 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
 
     for (PetscInt i = 0; i < n + 1; i++) {
         for (PetscInt j = 0; j < n; j++) {
-            h[i * n + j] = 0.0;
+            h[i * (n + 1) + j] = 0.0;
         }
     }
 
@@ -286,7 +286,7 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
             // v -= h_ij * q_j
             PetscCall(VecAXPY(v, -h_ij, Q[j]));
             
-            h[j * n + k - 1] = h_ij;
+            h[j * (n + 1) + k - 1] = h_ij;
         }
 
         // Normalize:
@@ -296,7 +296,7 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
 
         PetscScalar h_ij;
         PetscCall(VecNorm(v, NORM_2, &h_ij));
-        h[k * n + k - 1] = h_ij;
+        h[k * (n + 1) + k - 1] = h_ij;
 
         // Check for convergence
         if (h_ij > eps) {
