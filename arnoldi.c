@@ -240,7 +240,6 @@ int main(int argc, char **argv) {
     PetscCall(MatDestroy(&A));
     PetscCall(VecDestroy(&b));
     // PetscCall(MatDestroy(&H));
-
     PetscFinalize();
     return 0;
 }
@@ -281,8 +280,7 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
         // Reorthogonalization using modified Gram-Schmidt
         for (PetscInt j = 0; j < k - 1; j++) { // anche solo 3
             PetscScalar h_ij;
-            
-            // h_ij = q_j . v
+            // h_(j, k - 1) = q_j . v
             PetscCall(VecDot(Q[j], v, &h_ij));
             
             // v -= h_ij * q_j
