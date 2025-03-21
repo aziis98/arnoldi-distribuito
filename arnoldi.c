@@ -274,26 +274,30 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
 
         Vec v;
         PetscCall(VecDuplicate(b, &v));
+
+        // v = A q_k
         PetscCall(MatMult(A, Q[k - 1], v));
 
         // Reorthogonalization using modified Gram-Schmidt
-        for (PetscInt j = 0; j < k; j++) { // anche solo 3
-            // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Reorthogonalization %d %d\n", k, j));
-
+        for (PetscInt j = 0; j < k - 1; j++) { // anche solo 3
             PetscScalar h_ij;
+            
+            // h_ij = q_j . v
             PetscCall(VecDot(Q[j], v, &h_ij));
-
-            // PetscCall(MatSetValue(H, j, k - 1, h, INSERT_VALUES));
-            h[j * n + k - 1] = h_ij;
-
+            
+            // v -= h_ij * q_j
             PetscCall(VecAXPY(v, -h_ij, Q[j]));
+            
+            h[j * n + k - 1] = h_ij;
         }
 
-        // Normalize
+        // Normalize:
+
+        // v = v / ||v||
+        // h_ij = ||v||
+
         PetscScalar h_ij;
         PetscCall(VecNorm(v, NORM_2, &h_ij));
-
-        // PetscCall(MatSetValue(H, k, k - 1, h, INSERT_VALUES));
         h[k * n + k - 1] = h_ij;
 
         // Check for convergence
@@ -301,7 +305,7 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
             PetscCall(VecNormalize(v, NULL));
             Q[k] = v;
         } else {
-            // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Early breakdown"));
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Early breakdown"));
             break;
         }
     }

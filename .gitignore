@@ -1,6 +1,8 @@
 build*/
 .spack-env/
 
+*.local*
+
 *.log
 *.out
 *.lock?

@@ -1,6 +1,11 @@
 using SparseArrays
 using MAT
 
+if len(ARGS) == 0
+    println("Usage: julia laplacian.jl <N>")
+    exit(1)
+end
+
 N = parse(Int, ARGS[1])
 println("Generating 3D Laplacian for size $N")
 
