@@ -203,7 +203,7 @@ int main(int argc, char **argv) {
         printf("H = \n");
         for (int i = 0; i < l + 1; i++) {
             for (int j = 0; j < l; j++) {
-                printf("%.2f ", H[i * l + j]);
+                printf("%.2f ", H[i * (l + 1) + j]);
             }
             printf("\n");
         }
