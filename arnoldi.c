@@ -132,19 +132,19 @@ int main(int argc, char **argv) {
     VecSetSizes(b, PETSC_DECIDE, n);
     VecSetType(b, VECMPI);
 
-    // VecSet(b, 1.0);
+    VecSet(b, 1.0);
 
     // seed random number generator
-    srand((unsigned int)time(NULL));
+    // srand((unsigned int)time(NULL));
 
     // fill b with random values
-    for (PetscInt i = 0; i < n; i++) {
-        double val = (double)rand() / RAND_MAX;
-        VecSetValue(b, i, val, INSERT_VALUES);
-    }
+    // for (PetscInt i = 0; i < n; i++) {
+    //     double val = (double)rand() / RAND_MAX;
+    //     VecSetValue(b, i, val, INSERT_VALUES);
+    // }
 
-    VecAssemblyBegin(b);
-    VecAssemblyEnd(b);
+    // VecAssemblyBegin(b);
+    // VecAssemblyEnd(b);
 
     // VecSetValue(b, 0, 1.0, INSERT_VALUES);
 
