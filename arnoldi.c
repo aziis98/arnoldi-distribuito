@@ -1,3 +1,5 @@
+#include <time.h>
+
 #include <lapack.h>
 
 #include <lapacke.h>
@@ -17,6 +19,7 @@
 #include <petscdmda.h>
 #include <petscksp.h>
 #include <petscviewertypes.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 static char help[] = "Example PETSc program\n\n";
@@ -129,7 +132,20 @@ int main(int argc, char **argv) {
     VecSetSizes(b, PETSC_DECIDE, n);
     VecSetType(b, VECMPI);
 
-    VecSet(b, 1.0);
+    // VecSet(b, 1.0);
+
+    // seed random number generator
+    srand((unsigned int)time(NULL));
+
+    // fill b with random values
+    for (PetscInt i = 0; i < n; i++) {
+        double val = (double)rand() / RAND_MAX;
+        VecSetValue(b, i, val, INSERT_VALUES);
+    }
+
+    VecAssemblyBegin(b);
+    VecAssemblyEnd(b);
+
     // VecSetValue(b, 0, 1.0, INSERT_VALUES);
 
     // MatView(A, PETSC_VIEWER_STDOUT_WORLD);
@@ -156,14 +172,18 @@ int main(int argc, char **argv) {
 
     // MatSetType(H, MATMPIAIJ);
 
-    double *H = (double *)malloc((l + 1) * l * sizeof(double));
+    double *h = (double *)malloc((l + 1) * l * sizeof(double));
+
+    for (PetscInt ii = 0; ii < (l + 1) * l; ii++) {
+        h[ii] = 0.0;
+    }
 
     // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[Arnoldi] Starting iteration\n"));
 
     PetscLogDouble arnoldi_start_time;
     PetscCall(PetscTime(&arnoldi_start_time));
     {
-        PetscCall(ArnoldiIteration(A, b, l, n, Q, H));
+        PetscCall(ArnoldiIteration(A, b, l, n, Q, h));
     }
     PetscLogDouble arnoldi_end_time;
     PetscCall(PetscTime(&arnoldi_end_time));
@@ -181,6 +201,14 @@ int main(int argc, char **argv) {
     // PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
     if (rank == 0) {
+        // print Hessenberg matrix
+        printf("H = \n");
+        for (int i = 0; i < l + 1; i++) {
+            for (int j = 0; j < l; j++) {
+                printf("%.2f\t", h[i * (l + 1) + j]);
+            }
+            printf("\n");
+        }
 
         double *wr = (double *)malloc(l * sizeof(double));
         double *wi = (double *)malloc(l * sizeof(double));
@@ -192,8 +220,9 @@ int main(int argc, char **argv) {
         PetscCall(PetscTime(&lapack_start_time));
         {
             // call LAPACK function "DHSEQR" to compute the eigenvalues of the Hessenberg matrix
-            LAPACKE_dhseqr(LAPACK_ROW_MAJOR, 'E', 'I', l, 1, l, H, l, wr, wi, z, l);
+            LAPACKE_dhseqr(LAPACK_ROW_MAJOR, 'E', 'I', l, 1, l, h, l + 1, wr, wi, z, l);
         }
+
         PetscLogDouble lapack_end_time;
         PetscCall(PetscTime(&lapack_end_time));
         PetscLogDouble lapack_time = lapack_end_time - lapack_start_time;
@@ -203,7 +232,7 @@ int main(int argc, char **argv) {
         printf("H = \n");
         for (int i = 0; i < l + 1; i++) {
             for (int j = 0; j < l; j++) {
-                printf("%.2f ", H[i * (l + 1) + j]);
+                printf("%.2f\t", h[i * (l + 1) + j]);
             }
             printf("\n");
         }
@@ -254,11 +283,29 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
 
     Vec q;
 
-    for (PetscInt i = 0; i < n + 1; i++) {
-        for (PetscInt j = 0; j < n; j++) {
-            h[i * (n + 1) + j] = 0.0;
-        }
-    }
+    if (rank == 0)
+        printf("n = %d, m = %d\n", n, m);
+
+    /*
+
+    eps = 1e-12
+    h = np.zeros((n + 1, n))
+    Q = np.zeros((A.shape[0], n + 1))
+    # Normalize the input vector
+    Q[:, 0] = b / np.linalg.norm(b, 2)  # Use it as the first Krylov vector
+    for k in range(1, n + 1):
+        v = np.dot(A, Q[:, k - 1])  # Generate a new candidate vector
+        for j in range(k):  # Subtract the projections on previous vectors
+            h[j, k - 1] = np.dot(Q[:, j].conj(), v)
+            v = v - h[j, k - 1] * Q[:, j]
+        h[k, k - 1] = np.linalg.norm(v, 2)
+        if h[k, k - 1] > eps:  # Add the produced vector to the list, unless
+            Q[:, k] = v / h[k, k - 1]
+        else:  # If that happens, stop iterating.
+            return Q, h
+
+
+    */
 
     PetscCall(VecDuplicate(b, &q));
     PetscCall(VecCopy(b, q));
@@ -278,15 +325,20 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
         PetscCall(MatMult(A, Q[k - 1], v));
 
         // Reorthogonalization using modified Gram-Schmidt
-        for (PetscInt j = 0; j < k - 1; j++) { // anche solo 3
+        // fill all rows from 0 to k - 1 at column k - 1
+        for (PetscInt j = 0; j < k; j++) { // anche solo 3
+
             PetscScalar h_ij;
             // h_(j, k - 1) = q_j . v
             PetscCall(VecDot(Q[j], v, &h_ij));
-            
+
+            if (rank == 0)
+                printf("h[%d, %d] = %f\n", j, k - 1, h_ij);
+
+            h[j * (n + 1) + k - 1] = h_ij;
+
             // v -= h_ij * q_j
             PetscCall(VecAXPY(v, -h_ij, Q[j]));
-            
-            h[j * (n + 1) + k - 1] = h_ij;
         }
 
         // Normalize:
@@ -296,6 +348,10 @@ PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, do
 
         PetscScalar h_ij;
         PetscCall(VecNorm(v, NORM_2, &h_ij));
+
+        if (rank == 0)
+            printf("h[%d, %d] = %f\n", k, k - 1, h_ij);
+
         h[k * (n + 1) + k - 1] = h_ij;
 
         // Check for convergence

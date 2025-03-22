@@ -1,7 +1,7 @@
 using SparseArrays
 using MAT
 
-if len(ARGS) == 0
+if length(ARGS) == 0
     println("Usage: julia laplacian.jl <N>")
     exit(1)
 end

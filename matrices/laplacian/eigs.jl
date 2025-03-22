@@ -11,15 +11,17 @@ ex = fill(1, nx)
 ey = fill(1, ny)
 ez = fill(1, nz)
 
-Dxx = spdiagm(-1 => ex, 0 => -2 * ex, +1 => ex)
-Dyy = spdiagm(-1 => ey, 0 => -2 * ey, +1 => ey)
-Dzz = spdiagm(-1 => ez, 0 => -2 * ez, +1 => ez)
+Dxx = diagm(-1 => ex, 0 => -2 * ex, +1 => ex)
+Dyy = diagm(-1 => ey, 0 => -2 * ey, +1 => ey)
+Dzz = diagm(-1 => ez, 0 => -2 * ez, +1 => ez)
 
-Ix = spdiagm(0 => [ex; 1])
-Iy = spdiagm(0 => [ey; 1])
-Iz = spdiagm(0 => [ez; 1])
+Ix = diagm(0 => [ex; 1])
+Iy = diagm(0 => [ey; 1])
+Iz = diagm(0 => [ez; 1])
 
-# L = kron(Dxx, Iy, Iz) + kron(Ix, Dyy, Iz) + kron(Ix, Iy, Dzz)
+L = kron(Dxx, Iy, Iz) + kron(Ix, Dyy, Iz) + kron(Ix, Iy, Dzz)
+
+# display(eigvals(L))
 
 # # 10 x 17 grid
 # nx = 11 - 1
@@ -40,7 +42,7 @@ println("Laplacian matrix L:")
 
 display(sparse(L))
 
-l = 100
+l = 400
 
 # arnoldi iteration
 Q = Matrix{Float64}(undef, size(L, 1), l)
@@ -66,6 +68,6 @@ end
 H = H[1:(l-1), 1:(l-1)]
 
 println("Hessenberg matrix H:")
-display(H)
+display(sparse(H))
 
 display(eigvals(H))
