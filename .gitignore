@@ -8,3 +8,8 @@ build*/
 *.lock?
 
 *.mat
+
+# Typst Report
+
+*.pdf
+typst-report/plots/cropped/

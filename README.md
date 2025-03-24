@@ -1,4 +1,4 @@
-# Arnoldi Iteration
+# Arnoldi Iteration for Eigenvalues
 
 ## Setup
 
