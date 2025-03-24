@@ -7,6 +7,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Generate Pictures
+        run: |
+          make -C typst-report
       - name: Typst
         uses: lvignoli/typst-action@main
         with:
