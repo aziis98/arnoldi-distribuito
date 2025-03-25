@@ -12,11 +12,11 @@
       organization: [Dipartimento di Matematica],
       location: [Pisa, Italia],
       email: "antonio.delucreziis@gmail.com",
-      url: "https://aziis98.com"
+      url: "https://poisson.phc.dm.unipi.it/~delucreziis/"
     ),
   ),
   abstract: [
-    In this project we implement the Arnoldi Method for eigenvalues using #link("https://www.netlib.org/lapack/")[Lapack] #link("https://petsc.org/release/")[PETSc], #link("https://www.open-mpi.org/")[OpenMPI] libraries for distributed matrix and vector operations and run some numerical simulations on a small cluster of $tilde.basic 30$ nodes of #link("https://radxa.com/products/rock4/4cp")[Rock 4C+] boards we built for the course of #link("https://fdurastante.github.io/courses/highperfmathematics24.html")[High-Performance Mathematics].
+    In this project we implement the Arnoldi Method for eigenvalues using #link("https://www.netlib.org/lapack/")[Lapack] #link("https://petsc.org/release/")[PETSc], #link("https://www.open-mpi.org/")[OpenMPI] libraries for distributed matrix and vector operations and run some numerical simulations on a small cluster of $tilde.basic 30$ nodes of #link("https://radxa.com/products/rock4/4cp")[Rock 4C+] boards we built for the course of #link("https://fdurastante.github.io/courses/highperfmathematics24.html")[High-Performance Mathematics]. The code can be found at #link("https://github.com/aziis98/arnoldi-distribuito")[github.com/aziis98/arnoldi-distribuito].
   ]
 )
 
@@ -447,7 +447,7 @@ For the numerical experiments we set $ell = 25$ as size for the Krylov subspace.
 
 -  *Strong scaling* -- Fixed size problem with and varying number of processes. We expect this to start slow and get faster as we increase the number of processes up to a certain point where the overhead of communication will start to deteriorate the computation time.
 
-- *Weak scaling* -- Varying number of processes and varying size of the problem (costant amount of work per node). We expect this to start fast and get slower as we increase the size of the problem as the cost of communication will deteriorate the computation time.
+- *Weak scaling* -- Varying number of processes and varying size of the problem (constant amount of work per node). We expect this to start fast and get slower as we increase the size of the problem as the cost of communication will deteriorate the computation time.
 
 - *SuiteSparse Experiment* -- Varying number of processes on a matrix from the SuiteSparse matrix collection. We chose the matrix `atmosmodd` which has a symmetric pattern of non-zeros but is itself non-symmetric to see how the Hessenberg matrix is affected by the non-symmetry (we get a proper, non tridiagonal hessenberg matrix as with the symmetric Laplacian case).
 

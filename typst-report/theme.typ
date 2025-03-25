@@ -210,6 +210,7 @@
   align(center, smallcaps({
     text(size: 18pt, weight: 600, title)
     v(25pt, weak: true)
+    // text(authors.map(author => link(author.url, author.name)).join(", "))
     text(author-string)
   }))
 
