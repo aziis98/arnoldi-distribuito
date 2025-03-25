@@ -1,5 +1,8 @@
 # Arnoldi Iteration for Eigenvalues
 
+Download the
+[report](https://raw.githubusercontent.com/aziis98/arnoldi-distribuito/refs/heads/next/typst-report/main.pdf)
+
 ## Setup
 
 ### Spack
