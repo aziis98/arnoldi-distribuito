@@ -23,6 +23,7 @@
         "mpirun",
         "Mult",
         "nodecount",
+        "openmpi",
         "orthogonalize",
         "pagebreak",
         "Petsc",

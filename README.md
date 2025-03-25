@@ -38,8 +38,8 @@ $ spack env activate ./spack-env
 # 2. Compile and install the packages listed in the environment
 $ spack install
 
-# optional?? it looks like cmake can still find the packages just by loding the environment using pkg-config
-$ spack load openblas openmpi petsc
+# 3. (optional, it looks like cmake can still find the packages just by loading the environment using pkg-config)
+$ spack load lapack openmpi petsc
 ```
 
 ### CMake
