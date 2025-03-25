@@ -35,6 +35,7 @@
         "spdiagm",
         "srun",
         "suitesparse",
+        "tcsh",
         "tridiagonal",
         "typst",
         "underbrace",
