@@ -10,6 +10,4 @@ build*/
 *.mat
 
 # Typst Report
-
-*.pdf
 typst-report/plots/cropped/
