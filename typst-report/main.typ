@@ -199,13 +199,13 @@ $
 
 In this case the matrix associated with the finite difference operator can be written compactly as the sum of two Kronecker products:
 $
-  upright(bold(D))_(x x) + upright(bold(D))_(y y) =
+  D_(x x) + D_(y y) =
   upright(bold(I)) times.circle upright(bold(D))_(y y)
   +
   upright(bold(D))_(x x) times.circle upright(bold(I))
 $
 
-where $upright(bold(I))$ is the identity matrix. The Kronecker product $upright(bold(I)) times.circle upright(bold(D))_(y y)$ is a block diagonal matrix with copies of $upright(bold(D))_(y y)$ on the diagonal and $upright(bold(I)) times.circle upright(bold(D))_(x x)$ is a block diagonal matrix with copies of $upright(bold(D))_(x x)$ on the diagonal.
+where $upright(bold(I))$ is the identity matrix.
 
 This can also be generalized to the case of $n = 3$ and higher dimensions. The matrix for the discretized 3D Laplacian can be written as
 
@@ -330,7 +330,7 @@ $
   cos^2((pi i_3) / (2(n_3 + 1))))
 
 $
-for $(i_1, i_2, i_3)$ in $[1, dots, n_1]$, $[1, dots, n_2]$, $[1, dots, n_3]$ respectively. This is approximately in the range $[-12, 0]$.
+for $(i_1, i_2, i_3) in [1, dots, n_1] times [1, dots, n_2] times [1, dots, n_3]$. This is approximately in the range $[-12, 0]$.
 
 // TODO
 
@@ -499,7 +499,7 @@ The factor $cos^2(...)$ is bounded in $[0, 1]$ so the eigenvalues are bounded in
   ]
 ) <laplacian-schur>
 
-We get the following eigenvalues.
+We get the following eigenvalues:
 
 $
 Lambda = {
@@ -536,7 +536,7 @@ $
 
 === Strong Scaling
 
-First we tried to run the program starting from $N = 20$ and increasing the number of nodes doubling each time. As we can see in @laplacian-strong-scaling-3 the performance is initially poor but starts to improve as we increase the size of the problem. Initially the problem is too small to be able to take advantage of the parallelism and the communication overhead is too high.
+First we tried to run the program starting from a problem size of $N = 20$ and increasing the problem size by doubling each time. As we can see in @laplacian-strong-scaling-3 the performance is initially poor but starts to improve as we increase the size of the problem. Initially the problem is too small to be able to take advantage of the parallelism and the communication overhead is too high.
 
 #figure(
   image("plots/cropped/laplacian-strong-scaling-3.png", width: 75%),
