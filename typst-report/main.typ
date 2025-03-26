@@ -16,7 +16,7 @@
     ),
   ),
   abstract: [
-    In this project we implement the Arnoldi Method for eigenvalues using #link("https://www.netlib.org/lapack/")[Lapack] #link("https://petsc.org/release/")[PETSc], #link("https://www.open-mpi.org/")[OpenMPI] libraries for distributed matrix and vector operations and run some numerical simulations on a small cluster of $tilde.basic 30$ nodes of #link("https://radxa.com/products/rock4/4cp")[Rock 4C+] boards we built for the course of #link("https://fdurastante.github.io/courses/highperfmathematics24.html")[High-Performance Mathematics]. The code can be found at #link("https://github.com/aziis98/arnoldi-distribuito")[github.com/aziis98/arnoldi-distribuito].
+    In this project we implement the Arnoldi Method for eigenvalues using #link("https://www.netlib.org/lapack/")[Lapack], #link("https://petsc.org/release/")[PETSc], #link("https://www.open-mpi.org/")[OpenMPI] libraries for distributed matrix and vector operations and run some numerical simulations on a small cluster of $tilde.basic 30$ nodes of #link("https://radxa.com/products/rock4/4cp")[Rock 4C+] (`aarch64`) boards we built for the course of #link("https://fdurastante.github.io/courses/highperfmathematics24.html")[High-Performance Mathematics]. The code can be found at #link("https://github.com/aziis98/arnoldi-distribuito")[github.com/aziis98/arnoldi-distribuito].
   ]
 )
 
@@ -42,23 +42,20 @@
 
 There are various criteria that can be used to identify the "optimal" solution
 
-- *FOM* -- Have the residual is orthogonal to $cal(K)_ell(A, b)$.
+- *FOM* -- Have the residual be orthogonal to $cal(K)_ell(A, b)$
 
 - *GMRES* -- Have the residual minimized such that $x_ell$ is
+  $
+    x_ell colon.eq op("argmin")_(x in cal(K)_ell(A, b)) norm(b - A x)_2
+  $
 
-$
-  x_ell colon.eq op("argmin")_(x in cal(K)_ell(A, b)) norm(b - A x)_2
-$
-
-We are now interested in studying the *FOM* case and the behavior when $ell << n$.
-
-#pagebreak()
+We are now interested in studying the *FOM* case and its behavior when $ell << n$.
 
 == Arnoldi Iteration
 
-We now want to construct a nice basis for $cal(K)_ell(A, b)$ as the one directly given by $A^j b$ has very poor computational properties. We need a way of constructing an orthogonal basis of the Krylov subspace without using the QR algorithm
+We now want to construct a nice basis for $cal(K)_ell(A, b)$, as the one directly given by $A^j b$ has very poor computational properties. We need a way of constructing an orthogonal basis of the Krylov subspace without using the QR algorithm.
 
-Let's define the Arnoldi iteration that works as follows
+Let's define the Arnoldi iteration that works as follows:
 
 - First let's define $v_1 colon.eq b slash norm(b)_2$
 
@@ -115,29 +112,30 @@ The final algorithm for the *Arnoldi iteration* is
 
 == Arnoldi iteration for eigenvalues and eigenvectors
 
-To use the Arnoldi iteration to compute the eigenvalues of $A$ we can use the following procedure
+To use the Arnoldi iteration to compute the eigenvalues of $A$ we can use the following procedure:
 
-- First use the Arnoldi iteration to compute the upper Hessenberg matrix $H_ell$ for the Krylov subspace $cal(K)_ell(A, b)$.
+- First we use the Arnoldi iteration to compute the upper Hessenberg matrix $H_ell$ for the Krylov subspace $cal(K)_ell(A, b)$.
 
-- Compute the eigenvalues and eigenvectors of this Hessenberg matrix by computing a QR decomposition of the matrix $H_ell$.
+- We then compute the eigenvalues and eigenvectors of this Hessenberg matrix by computing a QR decomposition of the matrix $H_ell$.
 
 The following theorem states the relationship between the eigenvalues of $H_ell$ and $A$
 
 #theorem[
-  Let $H_ell$ be the upper Hessenberg matrix from the Arnoldi process for $A$ (without breakdown), starting from $b$. Then, the characteristic polynomial $p(lambda) = det(lambda I - H_ell)$ satisfies
+  Let $H_ell$ be the upper Hessenberg matrix from the Arnoldi process for $A$ (without breakdown), starting from $b$. Then, the characteristic polynomial $hat(p)(lambda) = det(lambda I - H_ell)$ satisfies
   $
-    min_(p in cal(P)_ell \ p_ell = 1) norm(p(A) b)_2
+    hat(p) = op("argmin", limits: #true)_(p in cal(P)_ell \ p_ell = 1) norm(p(A) b)_2
   $
 ]
 
 So the characteristic polynomial of $H_ell$ is a good approximation of the characteristic polynomial of $A$.
 
+#v(1em)
+
 To benchmark the performance of our implementation of the distributed Arnoldi method we will use the test problem of finding the eigenvalues of the 3D Laplacian that has a nice closed form solution. 
 
 == 3D Laplacian
 
-The matrix we will consider comes up from the Laplace equation $u : RR^n -> RR$, for example with zero Dirichlet boundary condition
-on the unit cube $[0, 1]^n$ we get the following problem
+The matrix we will consider comes up from the Laplace equation. Let $u : RR^n -> RR$, for example we can consider the zero Dirichlet boundary condition on the unit cube $[0, 1]^n$ and get the following problem
 
 $
 cases(
@@ -146,13 +144,13 @@ cases(
 )
 $
 
-Let's discretize this problem using the finite difference method. We will use a uniform grid with $n_i$ points in the $i$-th direction (and also let $h_i colon.eq 1 slash (n_i + 1)$). In dimension $n = 1$ the problem is just the second derivative of $u$ with respect to $x$ and the finite difference approximation is
+We now discretize this problem using the finite difference method. We will use a uniform grid with $n_i$ points in the $i$-th direction (and also let $h_i colon.eq 1 slash (n_i + 1)$). In dimension $n = 1$ the problem is just the second derivative of $u$ with respect to $x$ and the finite difference approximation is
 
 $
   D_(x x) u(x) = (u(x + h_x) - 2 u(x) + u(x - h_x)) / (h_x^2)
 $
 
-where $h_x colon.eq 1 slash (n_1 + 1)$ is the distance between two consecutive points. Let's notice that here the stencil has shape $mat(1, -2, 1, delim: "[")$. If we consider the matrix $upright(bold(D))_(x x)$ associated with the finite difference operator, we can write the problem as $upright(bold(D))_(x x) overline(u) = 0$ where $overline(u)$ is the vector of values of $u$ at the grid points. Where $upright(bold(D))_(x x)$ is the following tridiagonal matrix
+where $h_x colon.eq 1 slash (n_1 + 1)$ is the distance between two consecutive points. Notice that here the stencil has shape $mat(1, -2, 1, delim: "[")$. If we consider the matrix $upright(bold(D))_(x x)$ associated with the finite difference operator, we can write the problem as $upright(bold(D))_(x x) overline(u) = 0$ where $overline(u)$ is the vector of values of $u$ at the grid points, and $upright(bold(D))_(x x)$ is the following tridiagonal matrix
 
 $
   upright(bold(D))_(x x) =
@@ -167,11 +165,11 @@ $
   )
 $
 
-A tridiagonal matrix with constant diagonals of $a$, $b$, $c$ has the following eigenvalues
+It is well known that a tridiagonal matrix with constant diagonals of $a$, $b$, $c$ has eigenvalues
 $
   lambda_k = a - 2 sqrt(b c) cos((pi k) / (n + 1))
 $
-for $k = 1, dots, n$. In this case we have $a = -2$, $b = 1$, $c = 1$ so the eigenvalues are given by the following expression and have the following bounds
+for $k = 1, dots, n$. In this case we have $a = -2$, $b = 1$, $c = 1$ so the eigenvalues are given by the following expression (and have the following bounds):
 $
   lambda_k 
   &= -2 - 2 cos((pi k) / (n + 1)) \
@@ -179,16 +177,8 @@ $
   &= -4 underbrace(cos^2(pi / 2 dot k / (n + 1)), in [0, 1])
   ==> -4 < lambda_k < 0 \
 $
-// #todo(msg: "Check math")[
-//   To easily compute solutions to the Laplace equation we can use the fact that the solution can be written as a linear combination of the eigenvectors of the Laplacian as follows, let $u_0(x)$ be the initial condition, then we can write the solution as
-//   $
-//     u(x) = sum_(i = 1)^(n_1) a_i v_i(x)
-//     a_i = v_i^* u_0(x)
-//   $
-//   where $v_i(x)$ is the eigenvector of the Laplacian and $a_i$ is the coefficient of the linear combination.
-// ]
 
-For dimension $n = 2$ we have the following stencils
+For dimension $n = 2$ we have the following stencils:
 
 $
   mat(
@@ -207,7 +197,7 @@ $
   (D_(x x) + D_(y y)) u(x, y) = (u(x - h_1, y) + u(x + h_1, y) + u(x, y - h_y) + u(x, y + h_y) - 4 u(x, y)) / (h_1^2)
 $
 
-In this case the matrix associated with the finite difference operator can be written compactly as the sum of two Kronecker products
+In this case the matrix associated with the finite difference operator can be written compactly as the sum of two Kronecker products:
 $
   upright(bold(D))_(x x) + upright(bold(D))_(y y) =
   upright(bold(I)) times.circle upright(bold(D))_(y y)
@@ -217,7 +207,7 @@ $
 
 where $upright(bold(I))$ is the identity matrix. The Kronecker product $upright(bold(I)) times.circle upright(bold(D))_(y y)$ is a block diagonal matrix with copies of $upright(bold(D))_(y y)$ on the diagonal and $upright(bold(I)) times.circle upright(bold(D))_(x x)$ is a block diagonal matrix with copies of $upright(bold(D))_(x x)$ on the diagonal.
 
-This can also be generalized to the case of $n = 3$ and more dimensions. The matrix for the discretized 3D Laplacian can be written as
+This can also be generalized to the case of $n = 3$ and higher dimensions. The matrix for the discretized 3D Laplacian can be written as
 
 $
   L = upright(bold(D_(x x))) times.circle upright(bold(I)) times.circle upright(bold(I))
@@ -230,7 +220,7 @@ To compute the eigenvalues and eigenvectors of this matrix we can use the follow
 #proposition[
   The Kronecker product has the following properties
 
-  - The Kronecker product distributes over the matrix product, i.e.
+  - The Kronecker product distributes over the matrix product:
     $
       (A times.circle B) (C times.circle D) = (A C) times.circle (B D)
     $
@@ -240,7 +230,7 @@ To compute the eigenvalues and eigenvectors of this matrix we can use the follow
       (A times.circle B)^* = A^* times.circle B^*
     $
 
-  - Let $A = A_1 times.circle A_2 times.circle dots times.circle A_n$ be the Kronecker product of $n$ matrices. Then, the eigenvalues of $A$ are given by the products of the eigenvalues of the $A_i$
+  - Let $A = A_1 times.circle A_2 times.circle dots times.circle A_n$ be the Kronecker product of $n$ matrices. Then, the eigenvalues of $A$ are given by the products of the eigenvalues of the $A_i$.
 ]
 
 #proposition[
@@ -294,7 +284,7 @@ To compute the eigenvalues and eigenvectors of this matrix we can use the follow
     &= (V^* A V times.circle I) + (I times.circle W^* B W) \
     &= D_A times.circle I + I times.circle D_B
   $
-  to conclude let's analyze the block structure of this last term
+  To conclude let's analyze the block structure of this last term
   $
     D_A times.circle I + I times.circle D_B 
     = mat(
@@ -317,7 +307,7 @@ To compute the eigenvalues and eigenvectors of this matrix we can use the follow
       delim: "["
     )
   $
-  so we can produce all possible combinations of sums of $lambda_i$ and $mu_j$ so the final eigenvalues are given by
+  We can thus produce all possible combinations of sums of $lambda_i$ and $mu_j$ and so the final eigenvalues are given by
   $
     = mat(
       dots.down, , ;
@@ -328,7 +318,7 @@ To compute the eigenvalues and eigenvectors of this matrix we can use the follow
   $ 
 ]
 
-This fact can also be generalized to the case of $n$ dimensions. So recalling that the eigenvalues of the 1D Laplacian are given by
+This fact can also be generalized to the case of $n$ dimensions. Recalling that the eigenvalues of the 1D Laplacian are given by
 $
   lambda_i = -4 cos^2((pi i) / (2(n + 1)))
 $
@@ -387,7 +377,7 @@ Let's look again at the algorithm for the Arnoldi iteration. There are various o
   )
 )
 
-If we store the matrix $A$ and the vector $b$ in a distributed way, we can compute the following operations in parallel
+If we store the matrix $A$ and the vector $b$ in a distributed way, we can compute the following operations in parallel:
 
 - The normalization of $b$ using the function #link("https://petsc.org/release/manualpages/Vec/VecNormalize/")[`VecNormalize`].
 
@@ -399,7 +389,7 @@ If we store the matrix $A$ and the vector $b$ in a distributed way, we can compu
 
 - The norm of $q_k$ can be computed using #link("https://petsc.org/release/manualpages/Vec/VecNorm/")[`VecNorm`].
 
-The final algorithm written in C is the following, we will omit all calls to `PetscCall(...)` and other PETSc related infrastructure for the sake of brevity.
+The final algorithm written in C is the following: we will omit all calls to `PetscCall(...)` and other PETSc related infrastructure for the sake of brevity.
 
 #align(center, box(fill: luma(93%), radius: 5pt, inset: 5pt)[
   #set text(size: 8.5pt)
@@ -443,9 +433,9 @@ The matrix $A$ is stored in a distributed way using the PETSc #link("https://pet
 
 = Numerical Experiments
 
-For the numerical experiments we set $ell = 25$ as size for the Krylov subspace. We will use the following test problems
+For the numerical experiments we will use a Krylov subspace of dimension $ell = 25$. We will use the following test problems
 
--  *Strong scaling* -- Fixed size problem with and varying number of processes. We expect this to start slow and get faster as we increase the number of processes up to a certain point where the overhead of communication will start to deteriorate the computation time.
+-  *Strong scaling* -- Fixed size problem with varying number of processes. We expect this to start slow and get faster as we increase the number of processes up to a certain point where the overhead of communication will start to deteriorate the computation time.
 
 - *Weak scaling* -- Varying number of processes and varying size of the problem (constant amount of work per node). We expect this to start fast and get slower as we increase the size of the problem as the cost of communication will deteriorate the computation time.
 
@@ -453,7 +443,7 @@ For the numerical experiments we set $ell = 25$ as size for the Krylov subspace.
 
 == Experiment: 3D Laplacian
 
-All the sparse laplacian matrices are generated using the following Julia code, this generates the 3D Laplacian discretization for a grid of side $N$. The matrix is generated sparse using the `spdiagm` function from `SparseArrays`, `kron` is the Kronecker product function from `LinearAlgebra` and `matwrite` is a function from the `MAT` package to write the matrix to a file in the HDF5 format as needed by PETSc.
+All the sparse laplacian matrices are generated using the following Julia code, which generates the 3D Laplacian discretization for a grid of side $N$. The matrix is generated sparse using the `spdiagm` function from `SparseArrays`, `kron` is the Kronecker product function from `LinearAlgebra` and `matwrite` is a function from the `MAT` package to write the matrix to a file in the HDF5 format as needed by PETSc.
 
 #align(center, box(fill: luma(93%), radius: 5pt, inset: 5pt)[
   #set text(size: 10pt)
@@ -483,7 +473,7 @@ All the sparse laplacian matrices are generated using the following Julia code, 
   ```
 ])
 
-We dropped the factor $1 slash h_i^2$ from the matrix and computed its eigenvalues for a grid of size $N times N times N$. From the previous discussion we can see that the eigenvalues of the 3D Laplacian are given by the following expression, for $i_1, i_2, i_3 = 1, dots, N$
+We dropped the factor $1 slash h_i^2$ from the matrix and computed its eigenvalues for a grid of size $N times N times N$. From the previous discussion we can see that the eigenvalues of the 3D Laplacian are given by the following expression for $i_1, i_2, i_3 = 1, dots, N$:
 $
   lambda_(i_1, i_2, i_3) =
   - 4 (
@@ -496,20 +486,20 @@ $
 The factor $cos^2(...)$ is bounded in $[0, 1]$ so the eigenvalues are bounded in $[-12, 0]$. First we can check the correctness of the implementation by checking the eigenvalues and eigenvectors returned by our implementation. In @laplacian-hessenberg we can see the resulting Hessenberg matrix while in @laplacian-schur we have the Schur form returned by `dhesqr`.
 
 #figure(
-  image("plots/cropped/laplacian-hessenberg.png", width: 75%),
+  image("plots/cropped/laplacian-hessenberg.png", width: 70%),
   caption: [
-    Resulting Hessenberg matrix for the 3D Laplacian with $N = 20$ and $ell = 25$.
+    Hessenberg matrix for the 3D Laplacian with $N = 20$ and $ell = 25$.
   ]
 ) <laplacian-hessenberg>
 
 #figure(
-  image("plots/cropped/laplacian-schur.png", width: 75%),
+  image("plots/cropped/laplacian-schur.png", width: 70%),
   caption: [
-    Resulting Schur matrix for the 3D Laplacian with $N = 20$ and $ell = 25$ after calling `dhesqr`
+    Schur matrix for the 3D Laplacian with $N = 20$ and $ell = 25$ after calling `dhesqr`
   ]
 ) <laplacian-schur>
 
-And we get the following eigenvalues.
+We get the following eigenvalues.
 
 $
 Lambda = {
@@ -537,13 +527,16 @@ Lambda = {
   && -0.6,
   && -0.43,
   && -0.24,
-  && -0.07
+  && -0.07#hide([,])
+  &&
 } 
 $
 
+#pagebreak()
+
 === Strong Scaling
 
-First we tried to run the program starting from $N = 20$ and increasing the number of nodes by doubling. As we can see in @laplacian-strong-scaling-3 the performance starts bad but starts to improve as we increase the size of the problem (initially the problem is too small to be able to take advantage of the parallelism and the communication overhead is too high).
+First we tried to run the program starting from $N = 20$ and increasing the number of nodes doubling each time. As we can see in @laplacian-strong-scaling-3 the performance is initially poor but starts to improve as we increase the size of the problem. Initially the problem is too small to be able to take advantage of the parallelism and the communication overhead is too high.
 
 #figure(
   image("plots/cropped/laplacian-strong-scaling-3.png", width: 75%),
@@ -568,7 +561,9 @@ We get our final result in @laplacian-strong-scaling-4 for problem size up to $N
   ]
 ) <laplacian-strong-scaling-4-loglog>
 
-From these results we can also see how the performance stabilizes as we increase the node count, at a certain point adding more nodes does not improve as much the performance.
+From these results we can also see how the performance stabilizes as we increase the node count and that at a certain point adding more nodes does not improve as much the performance.
+
+// #pagebreak()
 
 === Weak Scaling
 
@@ -583,57 +578,104 @@ For the weak scaling we generated the matrices for $N = ceil(root(3, i times 200
 
 == Experiment: `atmosmodd` from SuiteSparse
 
-The matrix `atmosmodd` is a non-symmetric matrix with a symmetric pattern of non-zeros. 
+We also evaluated the performance against a matrix from the SuiteSparse collection. We choose the `atmosmodd` matrix. It is a non-symmetric matrix with a symmetric pattern of non-zeros, here is some information about the matrix:
 
-[TODO: More info on the matrix]
+#[
+  #set align(center)
+  #set text(size: 8.5pt)
+  #set table(stroke: 0.5pt)
 
-In @atmosmodd-hessenberg we can see that the resulting Hessenberg matrix looks tridiagonal but when looking at the log-log plot we actually see that the matrix is a proper Hessenberg matrix. The resulting Schur matrix is shown in @atmosmodd-schur and the computed eigenvalues are the following
+  #v(1.5em, weak: true)
+  #pad(x: -50%, grid(
+    align: center, 
+    columns: 2,
+    gutter: 1.5em,
+    table(
+      columns: (auto, auto),
+      align: left,
+      inset: 3pt,
+      [*Name*], [atmosmodd],
+      [*Group*], [Bourchtein],
+      [*Matrix ID*], [2265],
+      [*Num Rows*], [$1 quote.single 270 quote.single 432$],
+      [*Num Cols*], [$1 quote.single 270 quote.single 432$],
+      [*Non-zeros*], [$8 quote.single 814 quote.single 880$],
+      [*Pattern Entries*], [$8 quote.single 814 quote.single 880$],
+      [*Kind*], [Computational Fluid Dynamics Problem],
+      [*Symmetric*], [No],
+      [*Date*], [$2009$],
+      [*Author*], [A. Bourchtein],
+      [*Editor*], [T. Davis]
+    ),
+    table(
+      columns: (auto, auto),
+      align: left,
+      inset: 3pt,
+      [*Structural Rank*], [$1 quote.single 270 quote.single 432$],
+      [*Structural Rank Full*], [true],
+      [*Num Dmperm Blocks*], [$1$],
+      [*Strongly Connect Components*], [$1$],
+      [*Num Explicit Zeros*], [$0$],
+      [*Pattern Symmetry*], [$100%$],
+      [*Numeric Symmetry*], [$66.9%$],
+      [*Cholesky Candidate*], [No],
+      [*Positive Definite*], [No],
+      [*Type*], [Real]
+    )
+  ))
+  #v(1.5em, weak: true)
+]
+
+In @atmosmodd-hessenberg we can see that the resulting Hessenberg matrix looks tridiagonal but when looking at the log-log plot we actually see that the matrix is a proper Hessenberg matrix.
+
+The resulting Schur matrix is shown in @atmosmodd-schur and the computed eigenvalues are the following:
 
 $
   Lambda = {
-    && -187078.67,
-    && -181294.17,
-    && -173634.23,
-    && -167725.76,
-    && -160474.49, \
-    && -152024.13,
-    && -142505.34,
-    && -132037.86,
-    && -120709.76,
-    && -108473.08, \
-    && -93768.3,
-    && -83850.61,
-    && -75095.74,
-    && -65634.56,
-    && -56074.01, \
-    && -46728.52,
-    && -37822.94,
-    && -29538.87,
-    && -22025.98,
-    && -15371.79, \
-    && -9907.26,
-    && -5664.09,
-    && -2596.04,
+    && -187 quote.single 078.67,
+    && -181 quote.single 294.17,
+    && -173 quote.single 634.23,
+    && -167 quote.single 725.76,
+    && -160 quote.single 474.49, \
+    && -152 quote.single 024.13,
+    && -142 quote.single 505.34,
+    && -132 quote.single 037.86,
+    && -120 quote.single 709.76,
+    && -108 quote.single 473.08, \
+    && -93 quote.single 768.3,
+    && -83 quote.single 850.61,
+    && -75 quote.single 095.74,
+    && -65 quote.single 634.56,
+    && -56 quote.single 074.01, \
+    && -46 quote.single 728.52,
+    && -37 quote.single 822.94,
+    && -29 quote.single 538.87,
+    && -22 quote.single 025.98,
+    && -15 quote.single 371.79, \
+    && -9 quote.single 907.26,
+    && -5 quote.single 664.09,
+    && -2 quote.single 596.04,
     && -739.49,
-    && -60.07
+    && -60.07#hide([,])
+    &&
   }
 $
 
 #figure(
-  image("plots/cropped/suitesparse-atmosmodd-hessenberg.png", width: 75%),
+  image("plots/cropped/suitesparse-atmosmodd-hessenberg.png", width: 70%),
   caption: [
-    Resulting Hessenberg matrix for the SuiteSparse matrix `atmosmodd` with $ell = 25$.
+    Hessenberg matrix for the SuiteSparse matrix `atmosmodd` with $ell = 25$.
   ]
 ) <atmosmodd-hessenberg>
 
 #figure(
-  image("plots/cropped/suitesparse-atmosmodd-schur.png", width: 75%),
+  image("plots/cropped/suitesparse-atmosmodd-schur.png", width: 70%),
   caption: [
-    Resulting Schur matrix for the SuiteSparse matrix `atmosmodd` with $ell = 25$ after calling `dhesqr`
+    Schur matrix for the SuiteSparse matrix `atmosmodd` with $ell = 25$ after calling `dhesqr`
   ]
 ) <atmosmodd-schur>
 
-Finally we can see the same strong scaling performance for this non-symmetric matrix as for symmetric the 3D Laplacian.
+Finally, we can see the same strong scaling performance for this non-symmetric matrix as for symmetric the 3D Laplacian.
 
 #figure(
   image("plots/cropped/suitesparse-atmosmodd.png", width: 75%),

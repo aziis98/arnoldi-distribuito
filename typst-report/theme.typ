@@ -97,7 +97,7 @@
       // set align(center)
       set text(size: 20pt)
       smallcaps[
-        #v(18pt, weak: true)
+        #v(1.5em, weak: true)
         #number
         #it.body
         #v(normal-size, weak: true)
@@ -107,17 +107,17 @@
     } else {
       if it.level == 2 {
         set text(size: 14pt)
-        v(16pt, weak: true)
+        v(1.5em, weak: true)
         number
         let styled = if it.level <= 3 { strong } else { emph }
-        styled(it.body + [. ])
+        styled(it.body)
         h(7pt, weak: true)
       } else {
         set text(size: 12pt)
-        v(16pt, weak: true)
+        v(1.5em, weak: true)
         number
         let styled = if it.level <= 3 { strong } else { emph }
-        styled(it.body + [. ])
+        styled(it.body)
         h(7pt, weak: true)
       }
 
