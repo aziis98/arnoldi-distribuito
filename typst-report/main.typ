@@ -215,6 +215,8 @@ $
     + upright(bold(I)) times.circle upright(bold(I)) times.circle upright(bold(D_(z z)))
 $
 
+We are now interested in finding the eigenvalues of this matrix for large $N$, we will drop the factor $1 slash h_i^2$ from the matrix and directly compute the eigenvalues of the matrix $L$.
+
 To compute the eigenvalues and eigenvectors of this matrix we can use the following facts about the Kronecker products.
 
 #proposition[
@@ -235,13 +237,10 @@ To compute the eigenvalues and eigenvectors of this matrix we can use the follow
 
 #proposition[
   Given two diagonalizable matrices $A$ and $B$ with eigenvalues $lambda_i$ and $mu_j$, respectively the expression
-
   $
     A times.circle I + I times.circle B
   $
-
   has eigenvalues $lambda_i + mu_j$ and a matrix of eigenvectors is $V times.circle W$ where $V$ and $W$ are the matrices of eigenvectors of $A$ and $B$, respectively
-  
   $
     #grid(
       columns: 2,
@@ -397,11 +396,6 @@ The final algorithm written in C is the following: we will omit all calls to `Pe
   ```c
   PetscErrorCode ArnoldiIteration(Mat A, Vec b, PetscInt n, PetscInt m, Vec *Q, double *h) {
       Vec q;
-      for (PetscInt i = 0; i < n + 1; i++) {
-          for (PetscInt j = 0; j < n; j++) {
-              h[i * n + j] = 0.0;
-          }
-      }
       VecDuplicate(b, &q); 
       VecCopy(b, q); 
       VecNormalize(q, NULL);
@@ -413,11 +407,11 @@ The final algorithm written in C is the following: we will omit all calls to `Pe
           PetscScalar h_ij;
           for (PetscInt j = 0; j < k; j++) {
               VecDot(Q[j], v, &h_ij);
-              h[j * n + k - 1] = h_ij;
+              h[j * (n + 1) + k - 1] = h_ij;
               VecAXPY(v, -h_ij, Q[j]);
           }
           VecNorm(v, NORM_2, &h_ij);
-          h[k * n + k - 1] = h_ij;
+          h[j * (n + 1) + k - 1] = h_ij;
           if (h_ij > eps) {
               VecNormalize(v, NULL);
               Q[k] = v;
@@ -430,6 +424,8 @@ The final algorithm written in C is the following: we will omit all calls to `Pe
 ])
 
 The matrix $A$ is stored in a distributed way using the PETSc #link("https://petsc.org/release/manualpages/Mat/Mat/")[`Mat`] type. The vector $b$ is also stored in a distributed way using the PETSc #link("https://petsc.org/release/manualpages/Vec/Vec/")[`Vec`] type. In the first experiments the matrix $A$ is a 3D Laplacian matrix (symmetric case) and the vector $b$ is the vector of ones.
+
+// #pagebreak()
 
 = Numerical Experiments
 
@@ -536,7 +532,7 @@ $
 
 === Strong Scaling
 
-First we tried to run the program starting from a problem size of $N = 20$ and increasing the problem size by doubling each time. As we can see in @laplacian-strong-scaling-3 the performance is initially poor but starts to improve as we increase the size of the problem. Initially the problem is too small to be able to take advantage of the parallelism and the communication overhead is too high.
+First we tried to run the program starting from a problem size of $N = 20$ and increasing the problem size by doubling each time. As we can see in @laplacian-strong-scaling-3 the performance is initially poor (for $N in {20, 40}$) but starts to improve as we increase the size of the problem as initially the problem is too small and the communication overhead is too high.
 
 #figure(
   image("plots/cropped/laplacian-strong-scaling-3.png", width: 75%),
@@ -557,7 +553,7 @@ We get our final result in @laplacian-strong-scaling-4 for problem size up to $N
 #figure(
   image("plots/cropped/laplacian-strong-scaling-4-loglog.png", width: 75%),
   caption: [
-    Times for varying node count with $N in {20, 40, 80, 160}$ and $ell = 25$.
+    Times log-log for varying node count with $N in {20, 40, 80, 160}$ and $ell = 25$.
   ]
 ) <laplacian-strong-scaling-4-loglog>
 
@@ -582,7 +578,7 @@ We also evaluated the performance against a matrix from the SuiteSparse collecti
 
 #[
   #set align(center)
-  #set text(size: 8.5pt)
+  #set text(size: 9pt)
   #set table(stroke: 0.5pt)
 
   #v(1.5em, weak: true)
