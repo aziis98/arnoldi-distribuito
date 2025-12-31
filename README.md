@@ -6,7 +6,7 @@ Project for the course "Scientific Computing" and the special ["Parallel Computi
   <img src="https://github.com/user-attachments/assets/292ee2ef-c47e-4b8a-94e7-7eee7599c4c0" alt="Description 1" width="45%">
   <img src="https://github.com/user-attachments/assets/e0195261-6222-43d4-867c-2adfeaea25fb" alt="Description 2" width="45%">
   <p align="center">
-    <em>The cluster we build for the parallel computing project with before and after the case-change. Currently hosted in PHC</em>
+    <em>The cluster we build for the parallel computing project with before and after the case-change. This holds about ~25 [Rock 4C+ boards](https://radxa.com/products/rock4/4cp). Currently hosted in PHC</em>
   </p>
 </div>
 
