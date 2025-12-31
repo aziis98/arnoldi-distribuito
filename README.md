@@ -1,5 +1,17 @@
 # Arnoldi Iteration for Eigenvalues
 
+Project for the course "Scientific Computing" and the special ["Parallel Computing"](https://numpi.dm.unipi.it/teaching/calcolo-parallelo-dallinfrastruttura-alla-matematica-2022-23/) of our department. I run this project on the following beowulf cluster we build during the parallel computing course.
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/292ee2ef-c47e-4b8a-94e7-7eee7599c4c0" alt="Description 1" width="45%">
+  <img src="https://github.com/user-attachments/assets/e0195261-6222-43d4-867c-2adfeaea25fb" alt="Description 2" width="45%">
+  <p align="center">
+    <em>The cluster we build for the parallel computing project with before and after the case-change. Currently hosted in PHC</em>
+  </p>
+</div>
+
+---
+
 Download the
 [report](https://raw.githubusercontent.com/aziis98/arnoldi-distribuito/refs/heads/next/typst-report/main.pdf)
 
